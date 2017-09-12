@@ -15,16 +15,16 @@ module.exports.scrapeForJobs = function(postId, lastOfferId) {
         rp(options)
             .then(function($) {
                 const now = moment();
-                console.log("Starting Scrapping for Jobs on Post " + postId + " at " + now + "!!");
+                console.log("Starting Scrapping for Jobs on Post " + postId + " at " + now.format() + "!!");
                 var result = [];
                 var maxOfferId = 0;
-                $(".athing.comtr").each(function(i, elem) {
-                    var identation = $("img", elem).attr('width');
+                $(".athing.comtr").each(function(i, el) {
+                    var identation = $("img", el).attr('width');
                     //Identations > 0 are comments on job offers
                     if (identation !== "0")
                         return;
 
-                    var offerId = $(elem).attr('id');
+                    var offerId = $(el).attr('id');
 
                     //We use latest offer id scrapped to only process newer offers
                     if (offerId <= lastOfferId)
@@ -33,11 +33,10 @@ module.exports.scrapeForJobs = function(postId, lastOfferId) {
                     if (offerId > maxOfferId)
                         maxOfferId = offerId;
 
-                    var user = $(".hnuser", elem).text();
-                    var date = parseDate($(".age", elem).text(), now);
-                    var content = parseContent($, $(".c00", elem));
-                    var offer = createOffer({ offerId: offerId, user: user, content: content, date: date });
-                    result.push(offer);
+                    var user = $(".hnuser", el).text();
+                    var date = parseDate($(".age", el).text(), now);
+                    var content = parseContent($, $(".comment span", el));
+                    result.push({ offerId: offerId, user: user, content: content, date: date });
 
                 });
                 resolve({
@@ -60,12 +59,6 @@ function parseDate(age, now) {
 }
 
 function parseContent($, element) {
-    $("span", element).remove();
     $(".reply", element).remove();
     return element.html();
-}
-
-function createOffer(offer) {
-    var headline = offer.content.substring(0, offer.content.indexOf('<p>'));
-    return offer;
 }

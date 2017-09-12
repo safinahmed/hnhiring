@@ -27,17 +27,21 @@ var settingsSchema = mongoose.Schema({
 var Settings = mongoose.model('Settings', settingsSchema);
 
 var maxOfferId = 0;
+var listingPostId = '15148885'; //This ID is for September 2017
 
 Settings.find({ key: "MAX_OFFER_ID" })
     .then(function(result) {
         if (result.length > 0)
             maxOfferId = result[0].value;
 
-        hnscraper.scrapeForJobs('15148885', maxOfferId.toString())
+        hnscraper.scrapeForJobs(listingPostId, maxOfferId.toString())
             .then(function(data) {
 
-                if (data.data.length == 0)
+                if (data.data.length == 0) {
+                    db.close();
                     return;
+                }
+
 
                 var jobOffers = db.collection('jobOffers');
                 jobOffers.insertMany(data.data)
@@ -49,6 +53,7 @@ Settings.find({ key: "MAX_OFFER_ID" })
                             if (err) {
                                 console.log("Error updating maxOfferId: " + err);
                             }
+                            db.close();
                         });
 
                     }).catch(function(err) {
